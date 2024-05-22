@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.page {
+  min-height: 100%;
+}
+
+.topbar {
+  height: 7%;
+  width: 100%;
+  background-color: #FF0FFF;
+}
+
+.menu {
+  height: 93%;
+  width: 15%;
+  float: left;
+  background-color: yellow;
+}
+
+.content {
+  height: 93%;
+  width: 85%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  float: left;
+  background-color: blue;
+}
+
+.chess_board {
+  aspect-ratio: 1/1;
+  background-color: lightblue;
+  display: grid;
+  grid-template-columns: 12.5% 12.5% 12.5% 12.5% 12.5% 12.5% 12.5% 12.5%;
+}
+
+.chess_cell {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1/1;
+}
+
+.white_cell {
+  background-color: #fff;
+}
+
+.black_cell {
+  background-color: gray;
+}
+
+.piece {
+  background: none;
+  height: 100%;
+  width: 100%;
+}
