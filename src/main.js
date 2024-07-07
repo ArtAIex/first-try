@@ -13,16 +13,16 @@ function setBoardSize() {
   const div = document.getElementById('board');
   const parent = document.getElementById('content');
   div.style.height = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 + 'px';
-  console.log(Math.min(parent.clientWidth, parent.clientHeight) * 0.8);
+  // console.log(Math.min(parent.clientWidth, parent.clientHeight) * 0.8);
   for (let i = 0; i < boardSize; i++) {
     for (let j = 0; j < boardSize; j++) {
       const cell = document.getElementById(String(i) + String(j));
-      console.log(cell);
+      // console.log(cell);
       const piece = document.getElementById(String(i) + String(j) + 'p');
       if (piece != null) {
-        piece.height = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
-        piece.width = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
-        console.log(Math.min(parent.clientWidth, parent.clientHeight));
+        piece.style.height = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
+        piece.style.width = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
+        // console.log(Math.min(parent.clientWidth, parent.clientHeight));
       }
       cell.style.height = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
       cell.style.width = Math.min(parent.clientWidth, parent.clientHeight) * 0.8 * 0.125 + 'px';
@@ -44,25 +44,8 @@ for (let i = 0; i < boardSize; i++) {
     else cell.classList.add('black_cell');
     cell.dataset.row = i;
     cell.dataset.col = j;
-    cell.addEventListener('dragover', function(event) {
-      event.preventDefault();
-    });
-    cell.addEventListener('dragenter', function(event) {
-      event.target.classList.add('highlight');
-    });
-    cell.addEventListener('dragleave', function(event) {
-      event.target.classList.remove('highlight');
-    });
-    cell.addEventListener('drop', function(event) {
-      const id = event.dataTransfer.getData('id');
-      const element = document.getElementById(id);
-      element.style.opacity = 1;
-      console.log(event.target);
-      event.target.classList.remove('highlight');
-      event.target.append(element);
-    });
-    cell.addEventListener('dragend', function(event) {
-    });
+    cell.classList.add('.droppable');
+
     board.appendChild(cell);
   }
 }
@@ -77,15 +60,74 @@ for (let i = 0; i < boardSize; i++) {
     if (chess.get(column + (i + 1))) {
       let currentPiece = createPiece(chess.get(column + (i + 1)).type, chess.get(column + (i + 1)).color);
       currentPiece.id = String(i) + String(j) + 'p';
-      currentPiece.addEventListener('dragstart', function(event) {
-        console.log(event.target);
-        event.dataTransfer.setData('id', event.target.id);
-        event.dataTransfer.effectAllowed = "move";
-        this.style.opacity = 0;
-      });
-      currentPiece.addEventListener('drag', function(event) {
+      currentPiece.ondragstart = function() {
+        return false;
+      };
 
-      });
+      currentPiece.onmousedown = function(event) {
+        currentPiece.style.position = 'absolute';
+        currentPiece.style.zIndex = 1000;
+        board.append(currentPiece);
+        setBoardSize();
+        function moveAt(pageX, pageY) {
+          currentPiece.hidden = true;
+          let elemBelow = document.elementFromPoint(pageX, pageY);
+          currentPiece.hidden = false;
+          if (elemBelow.classList.contains('chess_cell') || elemBelow.classList.contains('piece')) {
+            currentPiece.style.left = pageX - currentPiece.offsetWidth / 2 + 'px';
+            currentPiece.style.top = pageY - currentPiece.offsetHeight / 2 + 'px';
+          }
+        }
+        moveAt(event.pageX, event.pageY);
+        currentPiece.hidden = true;
+        let currentCell = document.elementFromPoint(event.clientX, event.clientY);
+        let start = currentCell;
+        currentPiece.hidden = false;
+
+        function enterDiv(container) {
+          if (container.classList.contains('chess_cell') || container.classList.contains('piece')) {
+            currentCell.classList.add('highlight');
+          }
+        }
+        function leaveDiv(container) {
+          if (container.classList.contains('chess_cell') || container.classList.contains('piece')) {
+            currentCell.classList.remove('highlight');
+          }
+        }
+
+        enterDiv(currentCell);
+        function onMouseMove(event) {
+          moveAt(event.pageX, event.pageY);
+          console.log(event.clientX, event.clientY);
+          console.log(event.pageX, event.pageY);
+          currentPiece.hidden = true;
+          let elemBelow = document.elementFromPoint(event.clientX, event.clientY);
+          currentPiece.hidden = false;
+          if (!elemBelow) return;
+          if (elemBelow != currentCell) {
+            if (currentCell) {
+              leaveDiv(currentCell);
+            }
+            currentCell = elemBelow;
+            if (currentCell) {
+              enterDiv(currentCell);
+            }
+          }
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        currentPiece.onmouseup = function() {
+          document.removeEventListener('mousemove', onMouseMove);
+          currentPiece.onmouseup = null;
+          console.log(currentCell);
+          if (currentCell) {
+            currentCell.append(currentPiece);
+            leaveDiv(currentCell);
+          }
+          currentPiece.style.position = currentPiece.style.zIndex = currentPiece.style.left = currentPiece.style.top = null;
+          setBoardSize();
+        };
+      };
+
       const cell = document.getElementById(String(i) + String(j));
       cell.appendChild(currentPiece);
     }
@@ -93,9 +135,9 @@ for (let i = 0; i < boardSize; i++) {
 }
 
 const piece = document.getElementById('00p');
-console.log("==" + piece.width);
+// console.log("==" + piece.width);
 setBoardSize();
-console.log("==" + piece.width);
+// console.log("==" + piece.width);
 
 window.addEventListener('resize', function() {
   setBoardSize();
